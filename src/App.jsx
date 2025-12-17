@@ -1,9 +1,26 @@
 import Navbar from "./components/Navbar";
 import { Link } from "react-router-dom";
 import { clases } from "./data/clases";
+import { useState, useEffect } from "react";
+import Papa from "papaparse";
 import "./index.css";
 
 function App() {
+  // Dentro de tu componente...
+  const [planes, setPlanes] = useState([]);
+
+  useEffect(() => {
+    const sheetURL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5w6GNbESDr8y9xNOwkJfmWmhCPWTZxXOrnzBAVTKhNMaMiIbxN_OWZ8-c8XvaJUkF-0Dx794ivt8q/pub?output=csv";
+
+    Papa.parse(sheetURL, {
+      download: true,
+      header: true,
+      complete: (results) => {
+        setPlanes(results.data);
+      },
+    });
+  }, []);
   // Función para generar el link de WhatsApp dinámico
   const handleWhatsApp = (claseNombre) => {
     const telefono = "56912345678"; // Aquí iría el número del cliente real
@@ -96,66 +113,78 @@ function App() {
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {clases.map((clase) => (
-              <div
-                key={clase.id}
-                className="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col"
-              >
-                {/* Imagen con efecto Zoom suave al hacer hover */}
-                <div className="relative h-56 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10 opacity-60"></div>
-                  <img
-                    src={clase.imagen}
-                    alt={clase.titulo}
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <span className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-sm text-blue-900 text-xs font-bold px-3 py-1 rounded-full uppercase">
-                    Cupos disponibles
-                  </span>
-                </div>
+          <section className="py-20 px-4 md:px-8 max-w-7xl mx-auto">
+            {/* Contenedor GRID para la responsividad (Esto es clave) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {clases.map((clase, index) => (
+                <div
+                  key={index} // Usamos index si el Excel no trae ID
+                  className="group bg-white rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col"
+                >
+                  {/* Imagen con efecto Zoom suave al hacer hover */}
+                  <div className="relative h-56 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10 opacity-60"></div>
 
-                <div className="p-8 flex-1 flex flex-col">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                    {clase.titulo}
-                  </h3>
-                  <p className="text-gray-600 mb-6 flex-1">
-                    {clase.descripcion}
-                  </p>
+                    {/* Aquí usamos la URL de la imagen que viene del Excel */}
+                    <img
+                      src={
+                        clase.imagen ||
+                        "https://via.placeholder.com/400x300?text=Sin+Imagen"
+                      }
+                      alt={clase.titulo}
+                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                    />
 
-                  <div className="mt-auto pt-6 border-t border-gray-100">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-gray-400 text-sm">Mensualidad</span>
-                      <span className="text-2xl font-bold text-blue-600">
-                        {clase.precio}
-                      </span>
-                    </div>
+                    <span className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-sm text-blue-900 text-xs font-bold px-3 py-1 rounded-full uppercase">
+                      Cupos disponibles
+                    </span>
+                  </div>
 
-                    <button
-                      onClick={() => handleWhatsApp(clase.titulo)}
-                      className="w-full bg-gray-900 hover:bg-blue-600 text-white font-medium py-4 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg"
-                    >
-                      <span>Inscribirme ahora</span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                  <div className="p-8 flex-1 flex flex-col">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                      {clase.titulo}
+                    </h3>
+                    <p className="text-gray-600 mb-6 flex-1">
+                      {clase.descripcion}
+                    </p>
+
+                    <div className="mt-auto pt-6 border-t border-gray-100">
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-gray-400 text-sm">
+                          Mensualidad
+                        </span>
+                        <span className="text-2xl font-bold text-blue-600">
+                          {clase.precio}
+                        </span>
+                      </div>
+
+                      <button
+                        // Asegúrate de tener la función handleWhatsApp definida en tu componente
+                        onClick={() => handleWhatsApp(clase.titulo)}
+                        className="w-full bg-gray-900 hover:bg-blue-600 text-white font-medium py-4 rounded-xl transition-colors duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17 8l4 4m0 0l-4 4m4-4H3"
-                        />
-                      </svg>
-                    </button>
+                        <span>Inscribirme ahora</span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17 8l4 4m0 0l-4 4m4-4H3"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </section>
         </div>
       </main>
 
